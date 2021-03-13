@@ -1,0 +1,134 @@
+.lista-mensagens{
+    height: 85%;
+    max-height: 700px;
+    display:flex;
+    justify-content: flex-end;
+    flex-direction: column;
+  }
+
+.lista-mensagens-ul {
+  overflow-x: hidden;
+  overflow-y: scroll;
+}
+
+/* width */
+::-webkit-scrollbar {
+  width: 5px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+  
+  .columns {
+    min-height:750px;
+    box-shadow : 0 3rem 3rem -1rem rgba(10,10,10,.2);
+  }
+  
+  .column {
+    padding : 0 ;
+  }
+  
+  .lista-de-conversas {
+    background:white;
+  }
+  
+  .conversa-ativa {
+    background:#E5DDD5;
+  }
+  
+  .barra-superior {
+    margin : 0 ;
+    height: 50px;
+    background : #EDEDED;
+    border-right: 1px solid #e1e1e1;
+    border-bottom : 1px solid rgb(200,200,200);
+  } 
+  
+  .barra-superior span {
+    line-height:50px;
+    margin-left:25px;
+    font-weight:500;
+  }
+  
+  .item {
+    border-bottom:1px solid #f2f2f2;
+    padding :15px 30px;
+    margin-bottom : 0 !important;
+  }
+  
+  .subtitle {
+    color:gray
+  }
+  
+  .item:hover {
+    background :#f5f5f5;
+    cursor :pointer;
+  }
+  
+  .barra-inferior{
+    bottom:0;
+    width:77%;
+    padding:10px;
+    position:absolute;
+    background:#f0f0f0;
+  }
+  
+  .barra-inferior input {
+    border:none;
+    padding:10px;
+    margin : 0 50px;
+    width:90%;
+    border-radius : 15px;
+    font-size:16px;
+  }
+  
+  .verde {
+    background: rgb(220,248,198) impor !important;
+    align-self: flex-end;
+  }
+  
+  .mensagem-recebida {
+    font-size:14px;
+    box-shadow: rgba(0,0,0,0.13) 0px 1px 0.5px 0px;
+    background: white;
+    margin :5px 80px;
+    padding :5px 10px;
+    border-radius:5px;
+    width:fit-content;
+  }
+  
+  .mensagem-recebida span {
+    margin-left:25px;
+    font-size:11px;
+    color:gray;
+  }
+
+  .mensagem-enviada {
+    font-size:14px;
+    box-shadow: rgba(0,0,0,0.13) 0px 1px 0.5px 0px;
+    background: white;
+    margin :5px 80px;
+    padding :5px 10px;
+    margin-left: 50%;
+    border-radius:5px;
+    width:fit-content;
+  }
+  
+  .mensagem-enviada span {
+    margin-left:25px;
+    font-size:11px;
+    color:gray;
+  }
