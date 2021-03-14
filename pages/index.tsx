@@ -2,10 +2,20 @@ import Head from 'next/head'
 import styles from '../styles/Home.module.css'
 import { useState, useEffect } from 'react'
 import moment from 'moment'
+import { FaRobot } from 'react-icons/fa'
+import { IoPersonSharp } from 'react-icons/io5'
+import { VscLoading } from 'react-icons/vsc'
+import { useToasts } from 'react-toast-notifications'
+
+const controlIcons = {
+  status: ['ON BOT', 'WAITING', 'ON ATTENDANT'],
+  icons: [<FaRobot />, <VscLoading />, <IoPersonSharp />]
+}
 
 interface Chat {
   user: String,
-  name?: String
+  name?: String,
+  status: String,
   messages: Message[]
 }
 
@@ -28,6 +38,8 @@ export default function Home() {
   const [latest, setLatest] = useState<Chat[]>([])
   const [loading, setLoading] = useState("")
   const [contacts, setContacts] = useState([])
+  const [botCache, setBotCache] = useState([])
+  const { addToast } = useToasts()
 
   async function getContacts(){
     const res = await fetch('http://localhost:5000/contacts')
@@ -36,19 +48,41 @@ export default function Home() {
     return json
   }
 
+  async function getBotCache() {
+    const res = await fetch('http://localhost:3001/cached')
+    const json = await res.json()
+    setBotCache(json)
+    return json
+  }
+
   async function getChats() {
     const contacts_ = await getContacts()
+    const cached = await getBotCache()
     setLoading("Carregando mensagens...")
     fetch('http://localhost:3001/chats')
       .then(res => res.json())
       .then(json => {
         const result = json.map( el => {
           let name = ''
+          let status = 'ON ATTENDANT'
+
           contacts_.forEach( contact => {
             if(contact.number === el.user)
               name = contact.name
           })
-          return {...el, name}
+          
+          cached.forEach( cache => {
+            if(cache.user === el.user){
+              status = 'ON BOT'
+
+              if(!cache.shouldRespond){
+                status = 'WAITING'
+                addToast(name+' está querendo falar com você!', {appearance: 'info', autoDismiss: true})
+              }
+
+            }
+          } )
+          return {...el, name, status}
         })
         setLatest(result)
         setLoading("")
@@ -60,7 +94,6 @@ export default function Home() {
     let myInterval = setInterval(() => {
       getChats()
     }, 10000)
-    
     return () => {
       clearInterval(myInterval)
     }
@@ -110,6 +143,7 @@ export default function Home() {
         </div>
         <div className="subtitle is-6">
           {formattedMessages[formattedMessages.length - 1].value}
+          {controlIcons.icons[ controlIcons.status.indexOf(chat.status.toString()) ]}
         </div>
       </div>
     )
@@ -142,14 +176,14 @@ export default function Home() {
         <div className="columns">
           <div className="column is-3 lista-de-conversas">
             <div className="barra-superior"></div>
-            {latest.map(i => <ItemChat key={i.user.toString()} user={i.user} messages={i.messages} name={i.name}/>)}
+            {latest.map(i => <ItemChat key={i.user.toString()} user={i.user} messages={i.messages} name={i.name} status={i.status}/>)}
           </div>
           <div className="column conversa-ativa">
             <div className="barra-superior">
               <span>{active.name}</span>
             </div>
             <div className="lista-mensagens">
-              <ul className="lista-mensagens-ul">
+              <ul className="lista-mensagens-ul" >
                 {latest.map(chat => {
                   if (active.number === chat.user)
                     return chat.messages.map(message =>

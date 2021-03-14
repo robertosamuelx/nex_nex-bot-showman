@@ -70,7 +70,9 @@
   }
   
   .subtitle {
-    color:gray
+    color:gray;
+    display: flex;
+    justify-content: space-between;
   }
   
   .item:hover {
