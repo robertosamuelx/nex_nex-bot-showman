@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import moment from 'moment'
 import { FaRobot } from 'react-icons/fa'
 import { IoPersonSharp } from 'react-icons/io5'
-import { VscLoading } from 'react-icons/vsc'
+import { VscLoading, VscFilter } from 'react-icons/vsc'
 import { useToasts } from 'react-toast-notifications'
 
 const controlIcons = {
@@ -33,15 +33,14 @@ interface Message {
 
 export default function Home() {
 
-  const [active, setActive] = useState<Active>({number: '', name: ''})
+  const [active, setActive] = useState<Active>({ number: '', name: '' })
   const [myMessage, setMyMessage] = useState("")
   const [latest, setLatest] = useState<Chat[]>([])
-  const [loading, setLoading] = useState("")
   const [contacts, setContacts] = useState([])
   const [botCache, setBotCache] = useState([])
   const { addToast } = useToasts()
 
-  async function getContacts(){
+  async function getContacts() {
     const res = await fetch('http://localhost:5000/contacts')
     const json = await res.json()
     setContacts(json)
@@ -58,34 +57,31 @@ export default function Home() {
   async function getChats() {
     const contacts_ = await getContacts()
     const cached = await getBotCache()
-    setLoading("Carregando mensagens...")
     fetch('http://localhost:3001/chats')
       .then(res => res.json())
       .then(json => {
-        const result = json.map( el => {
+        const result = json.map(el => {
           let name = ''
           let status = 'ON ATTENDANT'
 
-          contacts_.forEach( contact => {
-            if(contact.number === el.user)
+          contacts_.forEach(contact => {
+            if (contact.number === el.user)
               name = contact.name
           })
-          
-          cached.forEach( cache => {
-            if(cache.user === el.user){
+
+          cached.forEach(cache => {
+            if (cache.user === el.user) {
               status = 'ON BOT'
 
-              if(!cache.shouldRespond){
+              if (!cache.shouldRespond) {
                 status = 'WAITING'
-                addToast(name+' está querendo falar com você!', {appearance: 'info', autoDismiss: true})
               }
 
             }
-          } )
-          return {...el, name, status}
+          })
+          return { ...el, name, status }
         })
         setLatest(result)
-        setLoading("")
       })
   }
 
@@ -124,59 +120,56 @@ export default function Home() {
   }
 
 
-  function ItemChat(chat: Chat) {
+  function ItemChat(props: { chat: Chat }) {
+    const { chat } = props
     const formattedMessages = chat.messages.map(message => {
       if (message.value.length > 15)
         return {
           ...message,
           value: message.value.substring(0, 15).concat('...')
         }
-        else
-          return message
+      else
+        return message
     })
     return (
       <div className="item" onClick={e => {
-        setActive({number: chat.user, name: chat.name})
+        setActive({ number: chat.user, name: chat.name })
       }}>
         <div className="title is-6">
           {chat.name}
         </div>
         <div className="subtitle is-6">
           {formattedMessages[formattedMessages.length - 1].value}
-          {controlIcons.icons[ controlIcons.status.indexOf(chat.status.toString()) ]}
+          {controlIcons.icons[controlIcons.status.indexOf(chat.status.toString())]}
         </div>
       </div>
     )
   }
 
-  function ItemMessage(message: Message) {
+  function ItemMessage(props: { message: Message }) {
+    const { message } = props
+    const formattedValue = message.value.split("\n")
     const formattedDate = moment(message.date).format('LT')
-    if (message.isFromMe) {
-      return (
-        <div className="mensagem-enviada">
-          {message.value}
-          <span>{formattedDate}</span>
-        </div>
-      )
-    }
-    else {
-      return (
-        <div className="mensagem-recebida">
-          {message.value}
-          <span>{formattedDate}</span>
-        </div>
-      );
-    }
+    const className = message.isFromMe ? "mensagem-enviada" : "mensagem-recebida"
+    return (
+      <div className={className}>
+        {formattedValue.map(value => value !== '' ? <p>{value}</p> : <br />)}
+        <span>{formattedDate}</span>
+      </div>
+    )
   }
 
   return (<div>
     <section className="section">
-      <h3>{loading}</h3>
       <div className="container">
         <div className="columns">
           <div className="column is-3 lista-de-conversas">
-            <div className="barra-superior"></div>
-            {latest.map(i => <ItemChat key={i.user.toString()} user={i.user} messages={i.messages} name={i.name} status={i.status}/>)}
+            <div className="barra-superior">
+              <span>
+                Categorizar por: <VscFilter />
+              </span>
+            </div>
+            {latest.map(i => <ItemChat key={i.user.toString()} chat={i} />)}
           </div>
           <div className="column conversa-ativa">
             <div className="barra-superior">
@@ -189,11 +182,8 @@ export default function Home() {
                     return chat.messages.map(message =>
                       <li>
                         <ItemMessage
-                          date={message.date}
-                          green={message.green}
-                          value={message.value}
-                          isFromMe={message.isFromMe} />
-                        </li>
+                          message={message} />
+                      </li>
                     )
                 })}
               </ul>
