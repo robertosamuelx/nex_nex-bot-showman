@@ -55,7 +55,21 @@
     background : #EDEDED;
     border-right: 1px solid #e1e1e1;
     border-bottom : 1px solid rgb(200,200,200);
-  } 
+  }
+
+  .my-menu {
+    background-color: aquamarine;
+    box-shadow: 2px 2px 5px #000;
+    max-width: 300px;
+    z-index: 1;
+    position: relative;
+    border-radius: 8px;
+  }
+
+  .my-menu li {
+    border-bottom-style: solid;
+    border-radius: 5px;
+  }
   
   .barra-superior span {
     line-height:50px;
