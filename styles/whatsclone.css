@@ -57,16 +57,12 @@
     border-bottom : 1px solid rgb(200,200,200);
   }
 
-  .my-menu {
-    background-color: aquamarine;
-    box-shadow: 2px 2px 5px #000;
-    max-width: 300px;
-    z-index: 1;
-    position: relative;
-    border-radius: 8px;
+  .lista-de-categorias {
+    overflow-x: hidden;
+  overflow-y: scroll;
   }
 
-  .my-menu li {
+  .lista-de-categorias li {
     border-bottom-style: solid;
     border-radius: 5px;
   }
@@ -82,6 +78,37 @@
     padding :15px 30px;
     margin-bottom : 0 !important;
   }
+
+  .categorie {
+    border-bottom:1px solid #f2f2f2;
+    padding :15px 30px;
+    margin-bottom : 0 !important;
+  }
+
+  .categorie-item {
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .categorie-item-option {
+    border-bottom:1px solid #020202;
+    padding :5px 10px;
+    margin-top: 5px;
+    z-index: 1;
+    position: relative;
+  }
+
+  .categorie-item-option:hover {
+    background-color:rgba(217,219,212,1);
+    transition: 0.5s;
+  }
+
+  .categorie:hover {
+    background-color: #f1f1f1;
+    transition: 0.5s;
+  }
   
   .subtitle {
     color:gray;
@@ -96,7 +123,7 @@
   
   .barra-inferior{
     bottom:0;
-    width:77%;
+    width:60%;
     padding:10px;
     position:absolute;
     background:#f0f0f0;
@@ -119,7 +146,7 @@
   .mensagem-recebida {
     font-size:14px;
     box-shadow: rgba(0,0,0,0.13) 0px 1px 0.5px 0px;
-    background: white;
+    background: #f2f2f2;
     margin :5px 80px;
     padding :5px 10px;
     border-radius:5px;
@@ -137,7 +164,7 @@
   .mensagem-enviada {
     font-size:14px;
     box-shadow: rgba(0,0,0,0.13) 0px 1px 0.5px 0px;
-    background: white;
+    background: #f5f5f5;
     margin :5px 80px;
     padding :5px 10px;
     margin-left: 50%;
