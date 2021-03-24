@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import moment from 'moment'
 import { FaArrowDown, FaArrowUp } from 'react-icons/fa'
 import { useToasts } from 'react-toast-notifications'
+import { GetStaticProps } from 'next'
 
 interface Chat {
   id: Number,
@@ -33,7 +34,7 @@ interface Filter {
   value: String[]
 }
 
-export default function Home() {
+export default function Home({endpoint}) {
 
   const [active, setActive] = useState<Active>({ number: '', name: '' })
   const [myMessage, setMyMessage] = useState("")
@@ -50,28 +51,30 @@ export default function Home() {
   const [mustShowOptions, setMustShowOptions] = useState([])
   const [filter, setFilter] = useState<Filter>({ field: [], value: [] })
 
+  console.log(endpoint)
+
   async function getCategories() {
-    const res = await fetch('http://localhost:3001/categories')
+    const res = await fetch(endpoint+'/categories')
     const json = await res.json()
     setCategories(json)
   }
 
   async function getContacts() {
-    const res = await fetch('http://localhost:5000/contacts')
+    const res = await fetch(endpoint+'/contacts')
     const json = await res.json()
     setContacts(json)
     return json
   }
 
   async function getBotCache() {
-    const res = await fetch('http://localhost:3001/cached')
+    const res = await fetch(endpoint+'/cached')
     const json = await res.json()
     setBotCache(json)
     return json
   }
 
   async function getSales() {
-    const res = await fetch('http://localhost:3001/sales')
+    const res = await fetch(endpoint+'/sales')
     const json = await res.json()
     setSales(json)
     return json
@@ -82,7 +85,7 @@ export default function Home() {
     const contacts_ = await getContacts()
     const cached = await getBotCache()
     const sales = await getSales()
-    fetch('http://localhost:3001/chats',
+    fetch(endpoint+'/chats',
       {
         body: JSON.stringify(filter),
         method: 'POST'
@@ -141,7 +144,7 @@ export default function Home() {
         body: message
       }
 
-      fetch('http://localhost:3001/send', {
+      fetch(endpoint+'/send', {
         method: 'POST',
         body: JSON.stringify(data),
         headers: {
@@ -310,4 +313,12 @@ export default function Home() {
         </div>
       </section>
     </div>)
+}
+
+export const getStaticProps: GetStaticProps = async (context) => {
+  return {
+    props: {
+      'endpoint': process.env.ENDPOINT_MANAGER
+    }
+  }
 }
