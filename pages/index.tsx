@@ -249,6 +249,10 @@ export default function Home({endpoint}) {
 
   return (<div>
       <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <button className="button is-primary" onClick={() => {
+          fetch(endpoint+'/start')
+            .then(() => {addToast('Bot ligado!', { appearance: 'success', autoDismiss: true })})
+      }}>Ligar bot</button>
         <input type="text" className="input" value={sallesmanName} onChange={e => {
           setSallesmanName(e.target.value)
           console.log(e.target.value)
