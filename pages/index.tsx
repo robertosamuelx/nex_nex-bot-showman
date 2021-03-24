@@ -133,9 +133,9 @@ export default function Home({endpoint}) {
     }
   }, [0])
 
-  function sendMessage(e: KeyboardEvent, to: String, message: String) {
+  function sendMessage(e: String, to: String, message: String) {
 
-    if (e.key === 'Enter') {
+    if (e === 'Enter') {
 
       const data = {
         createdAt: new Date(),
@@ -304,7 +304,7 @@ export default function Home({endpoint}) {
                   setMyMessage(e.target.value)
                 }}
                   onKeyPress={e => {
-                    sendMessage(e, active.number, myMessage)
+                    sendMessage(e.key, active.number, myMessage)
                   }}
                   value={myMessage} />
               </div>
