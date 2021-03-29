@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import moment from 'moment'
 import { FaArrowDown, FaArrowUp } from 'react-icons/fa'
+import { IoMdSend } from 'react-icons/io'
 import { useToasts } from 'react-toast-notifications'
 import { GetStaticProps } from 'next'
 
@@ -34,7 +35,7 @@ interface Filter {
   value: String[]
 }
 
-export default function Home({endpoint}) {
+export default function Home({ endpoint }) {
 
   const [active, setActive] = useState<Active>({ number: '', name: '' })
   const [myMessage, setMyMessage] = useState("")
@@ -50,31 +51,30 @@ export default function Home({endpoint}) {
   const [categories, setCategories] = useState<Categorie[]>([])
   const [mustShowOptions, setMustShowOptions] = useState([])
   const [filter, setFilter] = useState<Filter>({ field: [], value: [] })
-
-  console.log(endpoint)
+  const [notRead, setNotRead] = useState(0)
 
   async function getCategories() {
-    const res = await fetch(endpoint+'/categories')
+    const res = await fetch(endpoint + '/categories')
     const json = await res.json()
     setCategories(json)
   }
 
   async function getContacts() {
-    const res = await fetch(endpoint+'/contacts')
+    const res = await fetch(endpoint + '/contacts')
     const json = await res.json()
     setContacts(json)
     return json
   }
 
   async function getBotCache() {
-    const res = await fetch(endpoint+'/cached')
+    const res = await fetch(endpoint + '/cached')
     const json = await res.json()
     setBotCache(json)
     return json
   }
 
   async function getSales() {
-    const res = await fetch(endpoint+'/sales')
+    const res = await fetch(endpoint + '/sales')
     const json = await res.json()
     setSales(json)
     return json
@@ -85,7 +85,7 @@ export default function Home({endpoint}) {
     const contacts_ = await getContacts()
     const cached = await getBotCache()
     const sales = await getSales()
-    fetch(endpoint+'/chats',
+    fetch(endpoint + '/chats',
       {
         body: JSON.stringify(filter),
         method: 'POST'
@@ -133,28 +133,26 @@ export default function Home({endpoint}) {
     }
   }, [0])
 
-  function sendMessage(e: String, to: String, message: String) {
+  function sendMessage(to: String, message: String) {
 
-    if (e === 'Enter') {
-
-      const data = {
-        createdAt: new Date(),
-        from: '5511991255932',
-        to,
-        body: message
-      }
-
-      fetch(endpoint+'/send', {
-        method: 'POST',
-        body: JSON.stringify(data),
-        headers: {
-          'Content-Type': 'application/json'
-        },
-      }).then(() => {
-        getChats()
-        setMyMessage('')
-      })
+    const data = {
+      createdAt: new Date(),
+      from: '5511991255932',
+      to,
+      body: message
     }
+
+    fetch(endpoint + '/send', {
+      method: 'POST',
+      body: JSON.stringify(data),
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    }).then(() => {
+      getChats()
+      setMyMessage('')
+      addToast('Mensagem enviada', {autoDismiss: true, appearance: 'info'})
+    })
   }
 
 
@@ -230,6 +228,7 @@ export default function Home({endpoint}) {
           else
             mustShowOptions.splice(mustShowOptions.indexOf(categorie.value), 1)
           setMustShowOptions(mustShowOptions)
+          getChats()
         }}>
         <div className="categorie-item">
           {categorie.value}
@@ -248,75 +247,82 @@ export default function Home({endpoint}) {
 
 
   return (<div>
-      <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
       <button className="button is-primary" onClick={() => {
-          fetch(endpoint+'/start')
-            .then(() => {addToast('Bot ligado!', { appearance: 'success', autoDismiss: true })})
+        fetch(endpoint + '/start')
+          .then(() => { addToast('Bot ligado!', { appearance: 'success', autoDismiss: true }) })
       }}>Ligar bot</button>
-        <input type="text" className="input" value={sallesmanName} onChange={e => {
-          setSallesmanName(e.target.value)
-          console.log(e.target.value)
-        }} style={{ width: '50%', display: showInputNameSallesman }} readOnly={editName} />
-        <h3 className="title" style={{ display: showInputNameSallesman === 'block' ? 'none' : 'block' }}>Bem-vindo(a) {sallesmanName}</h3>
-        <button className="button is-link" onClick={() => {
-          setEditName(!editName)
-          if (buttonText === 'Salvar') {
-            addToast('Nome do vendedor definido para '.concat(sallesmanName), { appearance: 'success', autoDismiss: true })
-            setShowInputNameSallesman('none')
-          }
-          else
-            setShowInputNameSallesman('block')
-          setButtonText(buttonText === 'Salvar' ? 'Editar Nome' : 'Salvar')
-        }}>{buttonText}</button>
-      </div>
-      <section className="section">
-        <div className="container">
-          <div className="columns">
-            <div className="column is-2 lista-de-categorias">
-              <div className="barra-superior">
-                <span>Categorias</span>
-              </div>
-              <div className="categories">
-                {categories.map(categorie => <ItemCategorie categorie={categorie} key={categorie.value.toString()} />)}
-              </div>
+      <input type="text" className="input" value={sallesmanName} onChange={e => {
+        setSallesmanName(e.target.value)
+        console.log(e.target.value)
+      }} style={{ width: '50%', display: showInputNameSallesman }} readOnly={editName} />
+      <h3 className="title" style={{ display: showInputNameSallesman === 'block' ? 'none' : 'block' }}>Bem-vindo(a) {sallesmanName}</h3>
+      <button className="button is-link" onClick={() => {
+        setEditName(!editName)
+        if (buttonText === 'Salvar') {
+          addToast('Nome do vendedor definido para '.concat(sallesmanName), { appearance: 'success', autoDismiss: true })
+          setShowInputNameSallesman('none')
+        }
+        else
+          setShowInputNameSallesman('block')
+        setButtonText(buttonText === 'Salvar' ? 'Editar Nome' : 'Salvar')
+      }}>{buttonText}</button>
+    </div>
+    <section className="section">
+      <div className="container">
+        <div className="columns">
+          <div className="column is-2 lista-de-categorias">
+            <div className="barra-superior">
+              <span>Categorias</span>
             </div>
-            <div className="column is-3 lista-de-conversas">
-              <div className="barra-superior">
-                <span>Conversas</span>
-              </div>
-              {latest.map(i => <ItemChat key={i.id.valueOf()} chat={i} />)}
+            <div className="categories">
+              {categories.map(categorie => <ItemCategorie categorie={categorie} key={categorie.value.toString()} />)}
             </div>
-            <div className="column conversa-ativa">
-              <div className="barra-superior">
-                <span>{active.name}</span>
-              </div>
-              <div className="lista-mensagens">
-                <ul className="lista-mensagens-ul" >
-                  {latest.map(chat => {
-                    if (active.number === chat.user)
-                      return chat.messages.map(message =>
-                        <li>
-                          <ItemMessage
-                            message={message} />
-                        </li>
-                      )
-                  })}
-                </ul>
-              </div>
-              <div className="barra-inferior">
-                <input type="text" className="input" placeholder="Insira a mensagem" onChange={e => {
-                  setMyMessage(e.target.value)
+          </div>
+          <div className="column is-3 lista-de-conversas">
+            <div className="barra-superior">
+              <span>Conversas</span>
+              <span>{notRead > 1 ? notRead+' não lidas' : notRead+' não lida'}</span>
+            </div>
+            {latest.map(i => <ItemChat key={i.id.valueOf()} chat={i} />)}
+          </div>
+          <div className="column conversa-ativa">
+            <div className="barra-superior">
+              <span>{active.name}</span>
+            </div>
+            <div className="lista-mensagens">
+              <ul className="lista-mensagens-ul" >
+                {latest.map(chat => {
+                  if (active.number === chat.user)
+                    return chat.messages.map(message =>
+                      <li>
+                        <ItemMessage
+                          message={message} />
+                      </li>
+                    )
+                })}
+              </ul>
+            </div>
+            <div className="barra-inferior">
+              <textarea rows={5} cols={20} className="input" placeholder="Insira a mensagem"  onChange={e => {
+                setMyMessage(e.target.value)
+              }}
+                value={myMessage} />
+              <button
+                className="button"
+                style={{ border: 'none', background: 'none' }}
+                onClick={() => {
+                  sendMessage(active.number, myMessage)
                 }}
-                  onKeyPress={e => {
-                    sendMessage(e.key, active.number, myMessage)
-                  }}
-                  value={myMessage} />
-              </div>
+              >
+                <IoMdSend size={23} />
+              </button>
             </div>
           </div>
         </div>
-      </section>
-    </div>)
+      </div>
+    </section>
+  </div>)
 }
 
 export const getStaticProps: GetStaticProps = async (context) => {
