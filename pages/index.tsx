@@ -107,6 +107,9 @@ export default function Home({ endpoint }) {
               name = contact.name
           })
 
+          if(name === '')
+            name = el.user
+
           cached.forEach(cache => {
             if (cache.user === el.user) {
               status = 'ON BOT'
