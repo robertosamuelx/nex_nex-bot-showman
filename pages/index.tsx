@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import moment from 'moment'
-import { FaArrowDown, FaArrowUp } from 'react-icons/fa'
+import { FaArrowDown, FaArrowUp, FaArrowCircleDown } from 'react-icons/fa'
 import { IoMdSend } from 'react-icons/io'
 import { useToasts } from 'react-toast-notifications'
 import { GetStaticProps } from 'next'
@@ -52,6 +52,11 @@ export default function Home({ endpoint }) {
   const [mustShowOptions, setMustShowOptions] = useState([])
   const [filter, setFilter] = useState<Filter>({ field: [], value: [] })
   const [notRead, setNotRead] = useState(0)
+  const scrollRef = useRef(null)
+
+  const scrollToBottom = () => {
+    scrollRef.current?.scrollIntoView({ behavior: "smooth" })
+  }
 
   async function getCategories() {
     const res = await fetch(endpoint + '/categories')
@@ -107,9 +112,6 @@ export default function Home({ endpoint }) {
               name = contact.name
           })
 
-          if(name === '')
-            name = el.user
-
           cached.forEach(cache => {
             if (cache.user === el.user) {
               status = 'ON BOT'
@@ -154,7 +156,7 @@ export default function Home({ endpoint }) {
     }).then(() => {
       getChats()
       setMyMessage('')
-      addToast('Mensagem enviada', {autoDismiss: true, appearance: 'info'})
+      addToast('Mensagem enviada', { autoDismiss: true, appearance: 'info' })
     })
   }
 
@@ -257,7 +259,6 @@ export default function Home({ endpoint }) {
       }}>Ligar bot</button>
       <input type="text" className="input" value={sallesmanName} onChange={e => {
         setSallesmanName(e.target.value)
-        console.log(e.target.value)
       }} style={{ width: '50%', display: showInputNameSallesman }} readOnly={editName} />
       <h3 className="title" style={{ display: showInputNameSallesman === 'block' ? 'none' : 'block' }}>Bem-vindo(a) {sallesmanName}</h3>
       <button className="button is-link" onClick={() => {
@@ -285,7 +286,7 @@ export default function Home({ endpoint }) {
           <div className="column is-3 lista-de-conversas">
             <div className="barra-superior">
               <span>Conversas</span>
-              <span>{notRead > 1 ? notRead+' não lidas' : notRead+' não lida'}</span>
+              <span>{notRead > 1 ? notRead + ' não lidas' : notRead + ' não lida'}</span>
             </div>
             {latest.map(i => <ItemChat key={i.id.valueOf()} chat={i} />)}
           </div>
@@ -298,16 +299,19 @@ export default function Home({ endpoint }) {
                 {latest.map(chat => {
                   if (active.number === chat.user)
                     return chat.messages.map(message =>
-                      <li>
+                      <li ref={scrollRef}>
                         <ItemMessage
                           message={message} />
                       </li>
                     )
                 })}
               </ul>
+              <div className="arrow-container">
+                <FaArrowCircleDown size={40} className="arrow" onClick={() => { scrollToBottom() }} />
+              </div>
             </div>
             <div className="barra-inferior">
-              <textarea rows={5} cols={20} className="input" placeholder="Insira a mensagem"  onChange={e => {
+              <textarea rows={5} cols={20} className="input" placeholder="Insira a mensagem" onChange={e => {
                 setMyMessage(e.target.value)
               }}
                 value={myMessage} />

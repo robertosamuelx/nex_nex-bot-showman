@@ -11,6 +11,21 @@
   overflow-y: scroll;
 }
 
+.arrow-container {
+  position: absolute;
+  z-index: 1;
+  padding: 5px;
+  margin: 10px;
+}
+
+.arrow {
+  color: #000;
+}
+
+.arrow:hover {
+  opacity: 0.8;
+}
+
 /* width */
 ::-webkit-scrollbar {
   width: 5px;
