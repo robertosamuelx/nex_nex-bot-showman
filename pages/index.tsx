@@ -144,7 +144,8 @@ export default function Home({ endpoint }) {
       createdAt: new Date(),
       from: '5511991255932',
       to,
-      body: message
+      body: message,
+      salesman: sallesmanName
     }
 
     fetch(endpoint + '/send', {
@@ -154,8 +155,8 @@ export default function Home({ endpoint }) {
         'Content-Type': 'application/json'
       },
     }).then(() => {
-      getChats()
       setMyMessage('')
+      getChats()
       addToast('Mensagem enviada', { autoDismiss: true, appearance: 'info' })
     })
   }
