@@ -4,6 +4,7 @@ import { FaArrowDown, FaArrowUp, FaArrowCircleDown } from 'react-icons/fa'
 import { IoMdSend } from 'react-icons/io'
 import { useToasts } from 'react-toast-notifications'
 import { GetStaticProps } from 'next'
+import { BsPaperclip } from 'react-icons/bs'
 
 interface Chat {
   id: Number,
@@ -176,7 +177,8 @@ export default function Home({ endpoint }) {
     return (
       <div className="item" style={
         {
-          backgroundColor: chat.status == 'WAITING' ? '#98FB98' : chat.status == 'ON BOT' ? '#B0C4DE' : '#fff'
+          backgroundColor: chat.status == 'WAITING' ? '#98FB98' : chat.status == 'ON BOT' ? '#B0C4DE' : '#fff',
+          border: chat.user == active.number ? '2px #f0f0f0 solid' : 'none'
         }
       } onClick={e => {
         setActive({ number: chat.user, name: chat.name })
@@ -307,24 +309,35 @@ export default function Home({ endpoint }) {
                     )
                 })}
               </ul>
+
+            </div>
+            <div className="barra-inferior">
               <div className="arrow-container">
                 <FaArrowCircleDown size={40} className="arrow" onClick={() => { scrollToBottom() }} />
               </div>
-            </div>
-            <div className="barra-inferior">
-              <textarea rows={5} cols={20} className="input" placeholder="Insira a mensagem" onChange={e => {
+              <textarea placeholder="Insira a mensagem" onChange={e => {
                 setMyMessage(e.target.value)
               }}
                 value={myMessage} />
+              <button className="button"
+                onClick={() => { 
+                  alert('Funçao de envio de arquivos/fotos em desenvolvimento')
+                }}
+              >
+                <BsPaperclip />
+              </button>
               <button
                 className="button"
-                style={{ border: 'none', background: 'none' }}
                 onClick={() => {
-                  sendMessage(active.number, myMessage)
+                  if(myMessage !== '')
+                    sendMessage(active.number, myMessage)
+                  else
+                    addToast('Mensagem inválida!', {autoDismiss: true, appearance: "error"})
                 }}
               >
                 <IoMdSend size={23} />
               </button>
+
             </div>
           </div>
         </div>
