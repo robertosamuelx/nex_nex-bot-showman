@@ -122,6 +122,9 @@ export default function Home({ endpoint }) {
                 status = 'WAITING'
               }
 
+              if(cache.salesman !== '')
+                status = 'ON ATENDANT'
+
             }
           })
           return { ...el, name, status }
@@ -158,8 +161,10 @@ export default function Home({ endpoint }) {
       },
     }).then(() => {
       setMyMessage('')
-      getChats()
-      addToast('Mensagem enviada', { autoDismiss: true, appearance: 'info' })
+      getChats().then(() => {
+        addToast('Mensagem enviada', { autoDismiss: true, appearance: 'info' })
+        scrollToBottom()
+      })
     })
   }
 
@@ -189,7 +194,7 @@ export default function Home({ endpoint }) {
         </div>
         <div className="subtitle is-6">
           {formattedMessages[formattedMessages.length - 1].value}
-          {chat.salesman}
+          <b>{chat.salesman}</b>
         </div>
       </div>
     )
