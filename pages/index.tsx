@@ -4,13 +4,14 @@ import { FaArrowDown, FaArrowUp, FaArrowCircleDown } from 'react-icons/fa'
 import { IoMdSend } from 'react-icons/io'
 import { useToasts } from 'react-toast-notifications'
 import { GetStaticProps } from 'next'
-import { BsPaperclip } from 'react-icons/bs'
+import { CgCloseR } from 'react-icons/cg'
 
 interface Chat {
   id: Number,
   user: String,
   name?: String,
   status: String,
+  salesman: String,
   messages: Message[]
 }
 
@@ -188,12 +189,7 @@ export default function Home({ endpoint }) {
         </div>
         <div className="subtitle is-6">
           {formattedMessages[formattedMessages.length - 1].value}
-          {sales.map(sale => {
-            if (sale.chatId === chat.id)
-              return <b>{sale.salesmanName}</b>
-          }
-          )
-          }
+          {chat.salesman}
         </div>
       </div>
     )
@@ -289,13 +285,21 @@ export default function Home({ endpoint }) {
           <div className="column is-3 lista-de-conversas">
             <div className="barra-superior">
               <span>Conversas</span>
-              <span>{notRead > 1 ? notRead + ' não lidas' : notRead + ' não lida'}</span>
+              <span>{notRead > 1 ? notRead + ' não lidas' : notRead + ' não lida '}</span>
             </div>
             {latest.map(i => <ItemChat key={i.id.valueOf()} chat={i} />)}
           </div>
           <div className="column conversa-ativa">
             <div className="barra-superior">
               <span>{active.name}</span>
+              <button className="button"
+                style={{ background: 'none', border: 'none', marginLeft: '10px' }}
+                onClick={() => {
+                  alert('Funçao de encerrar atendimento em desenvolvimento')
+                }}
+              >
+                <CgCloseR />
+              </button>
             </div>
             <div className="lista-mensagens">
               <ul className="lista-mensagens-ul" >
@@ -312,30 +316,24 @@ export default function Home({ endpoint }) {
 
             </div>
             <div className="barra-inferior">
-              <div className="arrow-container">
+              <button className="arrow-container">
                 <FaArrowCircleDown size={40} className="arrow" onClick={() => { scrollToBottom() }} />
-              </div>
+              </button>
               <textarea placeholder="Insira a mensagem" onChange={e => {
                 setMyMessage(e.target.value)
               }}
                 value={myMessage} />
-              <button className="button"
-                onClick={() => { 
-                  alert('Funçao de envio de arquivos/fotos em desenvolvimento')
-                }}
-              >
-                <BsPaperclip />
-              </button>
               <button
+                style={{ background: 'none', border: 'none' }}
                 className="button"
                 onClick={() => {
-                  if(myMessage !== '')
+                  if (myMessage !== '')
                     sendMessage(active.number, myMessage)
                   else
-                    addToast('Mensagem inválida!', {autoDismiss: true, appearance: "error"})
+                    addToast('Mensagem inválida!', { autoDismiss: true, appearance: "error" })
                 }}
               >
-                <IoMdSend size={23} />
+                <IoMdSend size={40} />
               </button>
 
             </div>
