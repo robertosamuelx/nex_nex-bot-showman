@@ -17,6 +17,7 @@ export default NextAuth({
                 }
             },
             async authorize(credentials) {
+                console.log('chegou aqui')
                 const res = await fetch(process.env.ENDPOINT_MANAGER + '/user/login', {
                     headers: {
                         'Content-Type': 'application/json'
