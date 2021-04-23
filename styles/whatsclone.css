@@ -183,6 +183,10 @@
     color:gray;
   }
 
+  .mensagem-recebida img {
+    border-radius: 8px;
+  }
+
   .mensagem-enviada {
     font-size:14px;
     box-shadow: rgba(0,0,0,0.13) 0px 1px 0.5px 0px;
