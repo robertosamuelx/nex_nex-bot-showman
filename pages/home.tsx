@@ -66,6 +66,29 @@ export default function Home({ endpoint, session }) {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" })
   }
 
+  function handleDownloadFile(){
+    const data = {
+      user: active.number,
+      filter: {
+        quantity: 3
+      }
+    }
+    fetch(endpoint + '/message/filtered', {
+      body: JSON.stringify(data),
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    }).then(res => res.blob())
+    .then(blob => {
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'download.zip'
+      a.click()
+    })
+  }
+
   async function getCategories() {
     const res = await fetch(endpoint + '/categories')
     const json = await res.json()
@@ -357,7 +380,9 @@ export default function Home({ endpoint, session }) {
                     </div>
                   </section>
                   <footer className="modal-card-foot">
-                    <button className="button is-success" onClick={() => {alert('função em desenvolvimento')}}>Baixar</button>
+                    <button className="button is-success" onClick={() => {
+                      handleDownloadFile()
+                    }}>Baixar</button>
                   </footer>
                 </div>
                 <button className="modal-close is-large" onClick={() => { setShowModal(!showModal) }} aria-label="close"></button>
