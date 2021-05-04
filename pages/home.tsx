@@ -42,6 +42,7 @@ interface Filter {
 }
 
 export default function Home({ endpoint, session }) {
+  const FILES_LIMIT = 50
 
   const [active, setActive] = useState<Active>({ number: '', name: '' })
   const [myMessage, setMyMessage] = useState("")
@@ -61,6 +62,7 @@ export default function Home({ endpoint, session }) {
   const scrollRef = useRef(null)
   const [showOptionsChat, setShowOptionsChat] = useState("none")
   const [showModal, setShowModal] = useState(false)
+  const [byQuant, setByQuant] = useState("")
 
   const scrollToBottom = () => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -70,7 +72,7 @@ export default function Home({ endpoint, session }) {
     const data = {
       user: active.number,
       filter: {
-        quantity: 3
+        quantity: byQuant !== '' ? Number(byQuant) : FILES_LIMIT
       }
     }
     fetch(endpoint + '/message/filtered', {
@@ -371,10 +373,14 @@ export default function Home({ endpoint, session }) {
                     <div className="container">
                       <p className="p">Por quantidade</p>
                       <div className="select is-info">
-                        <select>
-                          <option>Escolha</option>
-                          <option>Últimas 10</option>
-                          <option>Últimas 15</option>
+                        <select value={byQuant} onChange={e => {
+                          setByQuant(e.target.value)
+                        }}>
+                          <option value="">Escolha</option>
+                          <option value="1">Última</option>
+                          <option value="5">Últimas 5</option>
+                          <option value="10">Últimas 10</option>
+                          <option value="15">Últimas 15</option>
                         </select>
                       </div>
                     </div>
