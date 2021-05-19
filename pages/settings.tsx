@@ -26,6 +26,7 @@ export default function Settings({ endpoint, session }) {
   const [selectedUser, setSelectedUser] = useState<User>({ id: 0, name: "", createdAt: '', lastLogin: '', password: '', username: '' })
   const [show, setShow] = useState("")
   const [newUser, setNewUser] = useState<NewUser>({ name: "", password: '', username: '', confirmPassword: "" })
+  const [newUserName, setNewUserName] = useState("")
   const { addToast } = useToasts()
 
   async function getUsers() {
@@ -34,10 +35,36 @@ export default function Settings({ endpoint, session }) {
     setUsers(json)
   }
 
-  function handleNewUser() {
-    //if(newUser.password !== newUser.confirmPassword)
-    //  addToast('As senhas não coincidem!', { autoDismiss: true, appearance: "error" })
-    alert("Função em desenvolvimento")
+  async function createUser() {
+    const data = JSON.stringify(newUser)
+    fetch(endpoint + '/user', {
+      method: "POST",
+      body: data,
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    }).then(() => {
+      addToast("Usuário criado com sucesso!", { autoDismiss: true, appearance: "success" })
+      handleCleanNewUser()
+    }).catch(err => {
+      console.error(err)
+      addToast("Ops, ocorreu um erro durante a criação, tente novamente mais tarde.",{ autoDismiss: true, appearance: "error" })
+    })
+  }
+
+  function handleCleanNewUser(){
+    setNewUser({ name: "", password: '', username: '', confirmPassword: "" })
+  }
+
+  function handleSubmitNewUser() {
+    if(newUser.password !== newUser.confirmPassword)
+      return addToast('As senhas não coincidem!', { autoDismiss: true, appearance: "error" })
+    
+    createUser()
+  }
+
+  function handleDeleteUser(){
+    //add modal to confirm delete
   }
 
   function ListUsers(props: { user: User, index: number }) {
@@ -52,59 +79,13 @@ export default function Settings({ endpoint, session }) {
           <p>Nome: {selectedUser.name}</p>
           <p>Criado em: {selectedUser.createdAt ? moment(selectedUser.createdAt.toString()).format("L") : ""}</p>
           <p>Último login: {selectedUser.lastLogin ? moment(selectedUser.lastLogin.toString()).format("L") : ""}</p>
-        </div>
-      </div>
-    )
-  }
-
-  function PanelCreate() {
-    return (
-      <div className="card-content">
-        <div className="content">
-          <div className="field">
-            <label className="label">Nome</label>
-            <div className="control">
-              <input className="input" type="input" placeholder="José da Silva" />
-            </div>
-          </div>
-          <div className="field">
-            <label className="label">Nome de usuário</label>
-            <div className="control">
-              <input className="input" type="input" placeholder="usuariodojose" />
-            </div>
-          </div>
-          <div className="field">
-            <label className="label">Senha</label>
-            <div className="control">
-              <input className="password" type="password" placeholder="senha do jose" />
-            </div>
-          </div>
-          <div className="field">
-            <label className="label">Confirme a senha</label>
-            <div className="control">
-              <input
-                className="password"
-                type="password"
-                placeholder="senha do jose"
-              />
-            </div>
-          </div>
-          <div className="field" style={{display: "flex", justifyContent: "space-around"}}>
-            <div className="control">
-              <button
-                className="button is-success"
-                onClick={() => {
-                  handleNewUser()
-                }}
-              >Salvar</button>
-            </div>
-            <div className="control">
-              <button
-                className="button is-info"
-                onClick={() => {
-                  handleNewUser()
-                }}>Limpar</button>
-            </div>
+          <div style={{display: "flex", justifyContent: "space-around"}}>
+          <button
+            className="button is-primary"
+            onClick={() => alert("em desenvolvimento")}>Editar</button>
+          <button
+            className="button is-danger"
+            onClick={() => alert("em desenvolvimento")}>Excluir</button>
           </div>
         </div>
       </div>
@@ -154,7 +135,68 @@ export default function Settings({ endpoint, session }) {
               {show == "details" &&
                 <PanelDetails />}
               {show == "create" &&
-                <PanelCreate />}
+                <div className="card-content">
+                <div className="content">
+                  <div className="field">
+                    <label className="label">Nome</label>
+                    <div className="control">
+                      <input 
+                        className="input" 
+                        type="input" 
+                        placeholder="José da Silva"
+                        value={newUser.name.toString()}
+                        onChange={e => {
+                          setNewUser({...newUser, name: e.target.value})
+                        }} />
+                    </div>
+                  </div>
+                  <div className="field">
+                    <label className="label">Nome de usuário</label>
+                    <div className="control">
+                      <input className="input" type="input" placeholder="usuariodojose" value={newUser.username.toString()} onChange={
+                        e => setNewUser({...newUser, username: e.target.value})
+                      }/>
+                    </div>
+                  </div>
+                  <div className="field">
+                    <label className="label">Senha</label>
+                    <div className="control">
+                      <input className="password" type="password" placeholder="senha do jose" value={newUser.password.toString()} onChange={
+                        e => setNewUser({...newUser, password: e.target.value})
+                      }/>
+                    </div>
+                  </div>
+                  <div className="field">
+                    <label className="label">Confirme a senha</label>
+                    <div className="control">
+                      <input
+                        className="password"
+                        type="password"
+                        placeholder="senha do jose"
+                        value={newUser.confirmPassword.toString()}
+                        onChange={e => setNewUser({...newUser, confirmPassword: e.target.value})}
+                      />
+                    </div>
+                  </div>
+                  <div className="field" style={{display: "flex", justifyContent: "space-around"}}>
+                    <div className="control">
+                      <button
+                        className="button is-success"
+                        onClick={() => {
+                          handleSubmitNewUser()
+                        }}
+                      >Salvar</button>
+                    </div>
+                    <div className="control">
+                      <button
+                        className="button is-info"
+                        onClick={() => {
+                          handleCleanNewUser()
+                        }}>Limpar</button>
+                    </div>
+                  </div>
+                </div>
+              </div>}
             </div>
           </div>
         </div>
