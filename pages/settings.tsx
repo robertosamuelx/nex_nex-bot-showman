@@ -12,7 +12,6 @@ interface User {
   lastLogin: String,
   id: number
 }
-
 interface NewUser {
   username: String,
   name: String,
@@ -20,19 +19,34 @@ interface NewUser {
   confirmPassword: String
 }
 
+interface Ask {
+  id: number,
+  ask: String,
+  answer: String,
+  isOrder: boolean
+}
+
 export default function Settings({ endpoint, session }) {
 
   const [users, setUsers] = useState<User[]>([])
+  const [asks, setAsks] = useState<Ask[]>([])
   const [selectedUser, setSelectedUser] = useState<User>({ id: 0, name: "", createdAt: '', lastLogin: '', password: '', username: '' })
+  const [selectedAsk, setSelectedAsk] = useState<Ask>({ id: 0, answer: "", ask: "", isOrder: false })
   const [show, setShow] = useState("")
   const [newUser, setNewUser] = useState<NewUser>({ name: "", password: '', username: '', confirmPassword: "" })
-  const [newUserName, setNewUserName] = useState("")
+
   const { addToast } = useToasts()
 
   async function getUsers() {
     const res = await fetch(endpoint + '/users')
     const json = await res.json()
     setUsers(json)
+  }
+
+  async function getAsks() {
+    const res = await fetch(endpoint + '/ask')
+    const json = await res.json()
+    setAsks(json)
   }
 
   async function createUser() {
@@ -46,32 +60,49 @@ export default function Settings({ endpoint, session }) {
     }).then(() => {
       addToast("Usuário criado com sucesso!", { autoDismiss: true, appearance: "success" })
       handleCleanNewUser()
+      getUsers()
     }).catch(err => {
       console.error(err)
-      addToast("Ops, ocorreu um erro durante a criação, tente novamente mais tarde.",{ autoDismiss: true, appearance: "error" })
+      addToast("Ops, ocorreu um erro durante a criação, tente novamente mais tarde.", { autoDismiss: true, appearance: "error" })
     })
   }
 
-  function handleCleanNewUser(){
+  function handleCleanNewUser() {
     setNewUser({ name: "", password: '', username: '', confirmPassword: "" })
   }
 
   function handleSubmitNewUser() {
-    if(newUser.password !== newUser.confirmPassword)
+    if (newUser.password !== newUser.confirmPassword)
       return addToast('As senhas não coincidem!', { autoDismiss: true, appearance: "error" })
-    
+
     createUser()
   }
 
-  function handleDeleteUser(){
-    //add modal to confirm delete
+  function handleDeleteUser() {
+    fetch(endpoint + "/user/" + selectedUser.id, {
+      method: "DELETE"
+    })
+      .then(() => {
+        addToast("Usuário excluído com sucesso", { autoDismiss: true, appearance: "success" })
+        getUsers()
+        handleCleanNewUser()
+        setShow("")
+      })
+      .catch(err => {
+        addToast("Ops, ocorreu um erro, tente novamente mais tarde", { autoDismiss: true, appearance: "error" })
+        console.log(err)
+      })
   }
 
   function ListUsers(props: { user: User, index: number }) {
     return (<option value={props.index}>{props.user.username}</option>)
   }
 
-  function PanelDetails() {
+  function ListAsks(props: { ask: Ask, index: number }) {
+    return (<option value={props.index}>{props.ask.id}</option>)
+  }
+
+  function UserPanelDetails() {
     return (
       <div className="card-content">
         <div className="content">
@@ -79,14 +110,30 @@ export default function Settings({ endpoint, session }) {
           <p>Nome: {selectedUser.name}</p>
           <p>Criado em: {selectedUser.createdAt ? moment(selectedUser.createdAt.toString()).format("L") : ""}</p>
           <p>Último login: {selectedUser.lastLogin ? moment(selectedUser.lastLogin.toString()).format("L") : ""}</p>
-          <div style={{display: "flex", justifyContent: "space-around"}}>
-          <button
-            className="button is-primary"
-            onClick={() => alert("em desenvolvimento")}>Editar</button>
-          <button
-            className="button is-danger"
-            onClick={() => alert("em desenvolvimento")}>Excluir</button>
+          <div style={{ display: "flex", justifyContent: "space-around" }}>
+            <button
+              className="button is-primary"
+              onClick={() => alert("em desenvolvimento")}>Editar</button>
+            <button
+              className="button is-danger"
+              onClick={() => handleDeleteUser()}>Excluir</button>
           </div>
+        </div>
+      </div>
+    )
+  }
+
+  function AskPanelDetails() {
+    return (
+      <div className="card-content">
+        <div className="content">
+          <p>Pergunta: {selectedAsk.ask}</p>
+          <p>Resposta: {selectedAsk.answer}</p>
+          <p>Referência: {selectedAsk.id}</p>
+          <label className="checkbox">
+            <input type="checkbox" checked={selectedAsk.isOrder} />
+            Essa pergunta está relacionada a um pedido
+          </label>
         </div>
       </div>
     )
@@ -94,6 +141,7 @@ export default function Settings({ endpoint, session }) {
 
   useEffect(() => {
     getUsers()
+    getAsks()
   }, [])
 
   return (
@@ -109,9 +157,9 @@ export default function Settings({ endpoint, session }) {
               </div>
               <div className="card-content" style={{ display: "flex", justifyContent: "space-between" }}>
                 <div className="select is-info">
-                  <select value={selectedUser.id} onChange={e => {
+                  <select onChange={e => {
                     setSelectedUser(users[e.target.value])
-                    setShow('details')
+                    setShow('user_details')
                   }}>
                     <option value={0}>Escolha</option>
                     {users.map((user, index) => <ListUsers user={user} index={index} key={user.id} />)}
@@ -120,7 +168,31 @@ export default function Settings({ endpoint, session }) {
                 <button
                   className="button"
                   onClick={() => {
-                    setShow("create")
+                    setShow("user_create")
+                  }}>Criar novo</button>
+              </div>
+              <footer className="card-footer"></footer>
+            </div>
+            <div className="card" >
+              <div className="card-header">
+                <h3 className="card-header-title title is-4">
+                  Perguntas e Respostas
+              </h3>
+              </div>
+              <div className="card-content" style={{ display: "flex", justifyContent: "space-between" }}>
+                <div className="select is-info">
+                  <select onChange={e => {
+                    setSelectedAsk(asks[e.target.value])
+                    setShow('ask_details')
+                  }}>
+                    <option value={0}>Escolha</option>
+                    {asks.map((ask, index) => <ListAsks ask={ask} index={index} key={ask.id} />)}
+                  </select>
+                </div>
+                <button
+                  className="button"
+                  onClick={() => {
+                    setShow("ask_create")
                   }}>Criar novo</button>
               </div>
             </div>
@@ -131,72 +203,95 @@ export default function Settings({ endpoint, session }) {
                 <h3 className="card-header-title title is-5">
                   Detalhes
                 </h3>
+                <button
+                  className="button is-link"
+                  style={{ margin: "5px" }}
+                  onClick={() => {
+                    signOut({ callbackUrl: '/' })
+                  }}>Sair</button>
               </div>
-              {show == "details" &&
-                <PanelDetails />}
-              {show == "create" &&
+              {show == "user_details" &&
+                <UserPanelDetails />}
+              {show == "user_create" &&
                 <div className="card-content">
-                <div className="content">
+                  <div className="content">
+                    <div className="field">
+                      <label className="label">Nome</label>
+                      <div className="control">
+                        <input
+                          className="input"
+                          type="input"
+                          placeholder="José da Silva"
+                          value={newUser.name.toString()}
+                          onChange={e => {
+                            setNewUser({ ...newUser, name: e.target.value })
+                          }} />
+                      </div>
+                    </div>
+                    <div className="field">
+                      <label className="label">Nome de usuário</label>
+                      <div className="control">
+                        <input className="input" type="input" placeholder="usuariodojose" value={newUser.username.toString()} onChange={
+                          e => setNewUser({ ...newUser, username: e.target.value })
+                        } />
+                      </div>
+                    </div>
+                    <div className="field">
+                      <label className="label">Senha</label>
+                      <div className="control">
+                        <input className="password" type="password" placeholder="senha do jose" value={newUser.password.toString()} onChange={
+                          e => setNewUser({ ...newUser, password: e.target.value })
+                        } />
+                      </div>
+                    </div>
+                    <div className="field">
+                      <label className="label">Confirme a senha</label>
+                      <div className="control">
+                        <input
+                          className="password"
+                          type="password"
+                          placeholder="senha do jose"
+                          value={newUser.confirmPassword.toString()}
+                          onChange={e => setNewUser({ ...newUser, confirmPassword: e.target.value })}
+                        />
+                      </div>
+                    </div>
+                    <div className="field" style={{ display: "flex", justifyContent: "space-around" }}>
+                      <div className="control">
+                        <button
+                          className="button is-success"
+                          onClick={() => {
+                            handleSubmitNewUser()
+                          }}
+                        >Salvar</button>
+                      </div>
+                      <div className="control">
+                        <button
+                          className="button is-info"
+                          onClick={() => {
+                            handleCleanNewUser()
+                          }}>Limpar</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>}
+              {show == 'ask_details' &&
+                <AskPanelDetails />}
+              {show == 'ask_create' &&
+                <div className="card-content">
+                  <div className="content">
                   <div className="field">
-                    <label className="label">Nome</label>
-                    <div className="control">
-                      <input 
-                        className="input" 
-                        type="input" 
-                        placeholder="José da Silva"
-                        value={newUser.name.toString()}
-                        onChange={e => {
-                          setNewUser({...newUser, name: e.target.value})
-                        }} />
+                      <label className="label">Pergunta</label>
+                      <div className="control">
+                        <input
+                          className="input"
+                          type="input"
+                          placeholder="Qual horário de funcionamento ?"
+                          />
+                      </div>
                     </div>
                   </div>
-                  <div className="field">
-                    <label className="label">Nome de usuário</label>
-                    <div className="control">
-                      <input className="input" type="input" placeholder="usuariodojose" value={newUser.username.toString()} onChange={
-                        e => setNewUser({...newUser, username: e.target.value})
-                      }/>
-                    </div>
-                  </div>
-                  <div className="field">
-                    <label className="label">Senha</label>
-                    <div className="control">
-                      <input className="password" type="password" placeholder="senha do jose" value={newUser.password.toString()} onChange={
-                        e => setNewUser({...newUser, password: e.target.value})
-                      }/>
-                    </div>
-                  </div>
-                  <div className="field">
-                    <label className="label">Confirme a senha</label>
-                    <div className="control">
-                      <input
-                        className="password"
-                        type="password"
-                        placeholder="senha do jose"
-                        value={newUser.confirmPassword.toString()}
-                        onChange={e => setNewUser({...newUser, confirmPassword: e.target.value})}
-                      />
-                    </div>
-                  </div>
-                  <div className="field" style={{display: "flex", justifyContent: "space-around"}}>
-                    <div className="control">
-                      <button
-                        className="button is-success"
-                        onClick={() => {
-                          handleSubmitNewUser()
-                        }}
-                      >Salvar</button>
-                    </div>
-                    <div className="control">
-                      <button
-                        className="button is-info"
-                        onClick={() => {
-                          handleCleanNewUser()
-                        }}>Limpar</button>
-                    </div>
-                  </div>
-                </div>
-              </div>}
+                </div>}
             </div>
           </div>
         </div>
