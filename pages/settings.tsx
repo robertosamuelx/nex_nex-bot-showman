@@ -20,9 +20,9 @@ interface NewUser {
 }
 
 interface Ask {
-  id: number,
-  ask: String,
-  answer: String,
+  id: string,
+  ask: string,
+  answer: string,
   isOrder: boolean
 }
 
@@ -31,9 +31,10 @@ export default function Settings({ endpoint, session }) {
   const [users, setUsers] = useState<User[]>([])
   const [asks, setAsks] = useState<Ask[]>([])
   const [selectedUser, setSelectedUser] = useState<User>({ id: 0, name: "", createdAt: '', lastLogin: '', password: '', username: '' })
-  const [selectedAsk, setSelectedAsk] = useState<Ask>({ id: 0, answer: "", ask: "", isOrder: false })
+  const [selectedAsk, setSelectedAsk] = useState<Ask>({ id: "", answer: "", ask: "", isOrder: false })
   const [show, setShow] = useState("")
   const [newUser, setNewUser] = useState<NewUser>({ name: "", password: '', username: '', confirmPassword: "" })
+  const [newAsk, setNewAsk] = useState<Ask>({id: "", ask: "", answer: "", isOrder: false})
 
   const { addToast } = useToasts()
 
@@ -69,6 +70,10 @@ export default function Settings({ endpoint, session }) {
 
   function handleCleanNewUser() {
     setNewUser({ name: "", password: '', username: '', confirmPassword: "" })
+  }
+
+  function handleCleanNewAsk() {
+    setNewAsk({id: "", ask: "", answer: "", isOrder: false})
   }
 
   function handleSubmitNewUser() {
@@ -129,7 +134,7 @@ export default function Settings({ endpoint, session }) {
         <div className="content">
           <p>Pergunta: {selectedAsk.ask}</p>
           <p>Resposta: {selectedAsk.answer}</p>
-          <p>Referência: {selectedAsk.id}</p>
+          <p>Chave: {selectedAsk.id}</p>
           <label className="checkbox">
             <input type="checkbox" checked={selectedAsk.isOrder} />
             Essa pergunta está relacionada a um pedido
@@ -280,14 +285,76 @@ export default function Settings({ endpoint, session }) {
               {show == 'ask_create' &&
                 <div className="card-content">
                   <div className="content">
-                  <div className="field">
+                    <div className="field">
                       <label className="label">Pergunta</label>
                       <div className="control">
                         <input
                           className="input"
                           type="input"
-                          placeholder="Qual horário de funcionamento ?"
-                          />
+                          placeholder="10 - Qual horário de funcionamento ?"
+                          required={true}
+                          value={newAsk.ask}
+                          onChange={e => {
+                            setNewAsk({...newAsk, ask: e.target.value})
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div className="field">
+                      <label className="label">Resposta</label>
+                      <div className="control">
+                        <input
+                          className="input"
+                          type="input"
+                          placeholder="De segunda á sexta, das 9 ás 18 horas"
+                          required={true}
+                          value={newAsk.answer}
+                          onChange={e => {
+                            setNewAsk({...newAsk, answer: e.target.value})
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div className="field">
+                      <label className="label">Chave</label>
+                      <div className="control">
+                        <input
+                          className="input"
+                          type="input"
+                          placeholder="10"
+                          required={true}
+                          value={newAsk.id}
+                          onChange={e => {
+                            setNewAsk({...newAsk, id: e.target.value})
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div className="field">
+                      <div className="control">
+                        <label className="checkbox">
+                          <input type="checkbox" checked={newAsk.isOrder} onChange={e => {
+                            setNewAsk({...newAsk, isOrder: e.target.checked})
+                          }}/>
+                            Essa pergunta está relacionada a um pedido
+                        </label>
+                      </div>
+                    </div>
+                    <div className="field" style={{ display: "flex", justifyContent: "space-around" }}>
+                      <div className="control">
+                        <button
+                          className="button is-success"
+                          onClick={() => {
+                            alert("Em desenvolvimento")
+                          }}
+                        >Salvar</button>
+                      </div>
+                      <div className="control">
+                        <button
+                          className="button is-info"
+                          onClick={() => {
+                            handleCleanNewAsk()
+                          }}>Limpar</button>
                       </div>
                     </div>
                   </div>
