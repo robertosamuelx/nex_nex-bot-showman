@@ -50,7 +50,7 @@ export default function Settings({ endpoint, session }) {
     setAsks(json)
   }
 
-  async function createUser() {
+  function createUser() {
     const data = JSON.stringify(newUser)
     fetch(endpoint + '/user', {
       method: "POST",
@@ -62,6 +62,24 @@ export default function Settings({ endpoint, session }) {
       addToast("Usuário criado com sucesso!", { autoDismiss: true, appearance: "success" })
       handleCleanNewUser()
       getUsers()
+    }).catch(err => {
+      console.error(err)
+      addToast("Ops, ocorreu um erro durante a criação, tente novamente mais tarde.", { autoDismiss: true, appearance: "error" })
+    })
+  }
+
+  function createAsk(){
+    const data = JSON.stringify(newAsk)
+    fetch(endpoint + '/ask', {
+      method: "POST",
+      body: data,
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    }).then(() => {
+      addToast("Pergunta criada com sucesso!", { autoDismiss: true, appearance: "success" })
+      handleCleanNewAsk()
+      getAsks()
     }).catch(err => {
       console.error(err)
       addToast("Ops, ocorreu um erro durante a criação, tente novamente mais tarde.", { autoDismiss: true, appearance: "error" })
@@ -83,6 +101,14 @@ export default function Settings({ endpoint, session }) {
     createUser()
   }
 
+  function handleSubmitNewAsk(){
+    const ids = asks.map(ask => ask.id)
+    if(ids.includes(newAsk.id))
+      return addToast(`A chave ${newAsk.id} já foi cadastrada, por favor escolha outra!`,  { autoDismiss: true, appearance: "error" })
+
+    createAsk()
+  }
+
   function handleDeleteUser() {
     fetch(endpoint + "/user/" + selectedUser.id, {
       method: "DELETE"
@@ -97,6 +123,20 @@ export default function Settings({ endpoint, session }) {
         addToast("Ops, ocorreu um erro, tente novamente mais tarde", { autoDismiss: true, appearance: "error" })
         console.log(err)
       })
+  }
+
+  function handleDeleteAsk(){
+    fetch(endpoint + "/ask/" + selectedAsk.id, {
+      method: "DELETE"
+    }).then(() => {
+      addToast("Pergunta excluída com sucesso", { autoDismiss: true, appearance: "success" })
+      getAsks()
+      handleCleanNewAsk()
+      setShow("")
+    }).catch(err => {
+      addToast("Ops, ocorreu um erro, tente novamente mais tarde", { autoDismiss: true, appearance: "error" })
+      console.log(err)
+    })
   }
 
   function ListUsers(props: { user: User, index: number }) {
@@ -139,6 +179,14 @@ export default function Settings({ endpoint, session }) {
             <input type="checkbox" checked={selectedAsk.isOrder} />
             Essa pergunta está relacionada a um pedido
           </label>
+          <div style={{ display: "flex", justifyContent: "space-around" }}>
+            <button
+              className="button is-primary"
+              onClick={() => alert("em desenvolvimento")}>Editar</button>
+            <button
+              className="button is-danger"
+              onClick={() => handleDeleteAsk()}>Excluir</button>
+          </div>
         </div>
       </div>
     )
@@ -345,7 +393,7 @@ export default function Settings({ endpoint, session }) {
                         <button
                           className="button is-success"
                           onClick={() => {
-                            alert("Em desenvolvimento")
+                            handleSubmitNewAsk()
                           }}
                         >Salvar</button>
                       </div>
