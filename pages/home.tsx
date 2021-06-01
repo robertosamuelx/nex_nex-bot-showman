@@ -41,7 +41,7 @@ interface Filter {
   value: String[]
 }
 
-export default function Home({ endpoint, session }) {
+export default function Home({ endpoint, session, myNumber }) {
   const FILES_LIMIT = 50
 
   const [active, setActive] = useState<Active>({ number: '', name: '' })
@@ -51,8 +51,6 @@ export default function Home({ endpoint, session }) {
   const [botCache, setBotCache] = useState([])
   const [sales, setSales] = useState([])
   const { addToast } = useToasts()
-  const [editName, setEditName] = useState(true)
-  const [buttonText, setButtonText] = useState('Editar Nome')
   const [sallesmanName, setSallesmanName] = useState(session.user.name)
   const [showInputNameSallesman, setShowInputNameSallesman] = useState('none')
   const [categories, setCategories] = useState<Categorie[]>([])
@@ -178,7 +176,7 @@ export default function Home({ endpoint, session }) {
 
     const data = {
       createdAt: new Date(),
-      from: '5511991255932',
+      from: myNumber,
       to,
       body: message,
       salesman: sallesmanName
@@ -453,7 +451,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   return {
     props: {
       endpoint: process.env.ENDPOINT_MANAGER,
-      session: session
+      session: session,
+      myNumber: process.env.MY_NUMBER
     }
   }
 }
