@@ -34,7 +34,8 @@ export default function Settings({ endpoint, session }) {
   const [selectedAsk, setSelectedAsk] = useState<Ask>({ id: "", answer: "", ask: "", isOrder: false })
   const [show, setShow] = useState("")
   const [newUser, setNewUser] = useState<NewUser>({ name: "", password: '', username: '', confirmPassword: "" })
-  const [newAsk, setNewAsk] = useState<Ask>({id: "", ask: "", answer: "", isOrder: false})
+  const [newAsk, setNewAsk] = useState<Ask>({ id: "", ask: "", answer: "", isOrder: false })
+  const [isAskEditingMode, setIsAskEditingMode] = useState(false)
 
   const { addToast } = useToasts()
 
@@ -68,18 +69,20 @@ export default function Settings({ endpoint, session }) {
     })
   }
 
-  function createAsk(){
-    const data = JSON.stringify(newAsk)
-    fetch(endpoint + '/ask', {
-      method: "POST",
+  function createAsk() {
+    const data = JSON.stringify(isAskEditingMode ? selectedAsk : newAsk)
+    const url = endpoint + '/ask' + (isAskEditingMode ? `/${selectedAsk.id}` : "")
+    fetch(url, {
+      method: isAskEditingMode ? "PUT" : "POST",
       body: data,
       headers: {
         'Content-Type': 'application/json'
       }
     }).then(() => {
-      addToast("Pergunta criada com sucesso!", { autoDismiss: true, appearance: "success" })
+      addToast("Pergunta criada/atualizada com sucesso!", { autoDismiss: true, appearance: "success" })
       handleCleanNewAsk()
       getAsks()
+      setIsAskEditingMode(false)
     }).catch(err => {
       console.error(err)
       addToast("Ops, ocorreu um erro durante a criação, tente novamente mais tarde.", { autoDismiss: true, appearance: "error" })
@@ -91,7 +94,8 @@ export default function Settings({ endpoint, session }) {
   }
 
   function handleCleanNewAsk() {
-    setNewAsk({id: "", ask: "", answer: "", isOrder: false})
+    setNewAsk({ id: "", ask: "", answer: "", isOrder: false })
+    setSelectedAsk({ id: "", answer: "", ask: "", isOrder: false })
   }
 
   function handleSubmitNewUser() {
@@ -101,10 +105,10 @@ export default function Settings({ endpoint, session }) {
     createUser()
   }
 
-  function handleSubmitNewAsk(){
+  function handleSubmitNewAsk() {
     const ids = asks.map(ask => ask.id)
-    if(ids.includes(newAsk.id))
-      return addToast(`A chave ${newAsk.id} já foi cadastrada, por favor escolha outra!`,  { autoDismiss: true, appearance: "error" })
+    if (ids.includes(newAsk.id))
+      return addToast(`A chave ${newAsk.id} já foi cadastrada, por favor escolha outra!`, { autoDismiss: true, appearance: "error" })
 
     createAsk()
   }
@@ -125,7 +129,7 @@ export default function Settings({ endpoint, session }) {
       })
   }
 
-  function handleDeleteAsk(){
+  function handleDeleteAsk() {
     fetch(endpoint + "/ask/" + selectedAsk.id, {
       method: "DELETE"
     }).then(() => {
@@ -162,30 +166,6 @@ export default function Settings({ endpoint, session }) {
             <button
               className="button is-danger"
               onClick={() => handleDeleteUser()}>Excluir</button>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  function AskPanelDetails() {
-    return (
-      <div className="card-content">
-        <div className="content">
-          <p>Pergunta: {selectedAsk.ask}</p>
-          <p>Resposta: {selectedAsk.answer}</p>
-          <p>Chave: {selectedAsk.id}</p>
-          <label className="checkbox">
-            <input type="checkbox" checked={selectedAsk.isOrder} />
-            Essa pergunta está relacionada a um pedido
-          </label>
-          <div style={{ display: "flex", justifyContent: "space-around" }}>
-            <button
-              className="button is-primary"
-              onClick={() => alert("em desenvolvimento")}>Editar</button>
-            <button
-              className="button is-danger"
-              onClick={() => handleDeleteAsk()}>Excluir</button>
           </div>
         </div>
       </div>
@@ -329,7 +309,89 @@ export default function Settings({ endpoint, session }) {
                   </div>
                 </div>}
               {show == 'ask_details' &&
-                <AskPanelDetails />}
+                <div className="card-content">
+                  <div className="content">
+                    <div className="field">
+                      <label className="label">Pergunta</label>
+                      <div className="control">
+                        <input
+                          className="input"
+                          type="input"
+                          placeholder="10 - Qual horário de funcionamento ?"
+                          required={true}
+                          value={selectedAsk.ask}
+                          readOnly={!isAskEditingMode}
+                          onChange={e => {
+                            setSelectedAsk({ ...selectedAsk, ask: e.target.value })
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div className="field">
+                      <label className="label">Resposta</label>
+                      <div className="control">
+                        <textarea
+                          className="textarea"
+                          rows={5}
+                          placeholder="De segunda á sexta, das 9 ás 18 horas"
+                          required={true}
+                          readOnly={!isAskEditingMode}
+                          value={selectedAsk.answer}
+                          onChange={e => {
+                            setSelectedAsk({ ...selectedAsk, answer: e.target.value })
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div className="field">
+                      <label className="label">Chave</label>
+                      <div className="control">
+                        <input
+                          className="input"
+                          type="input"
+                          placeholder="10"
+                          required={true}
+                          value={selectedAsk.id}
+                          readOnly={!isAskEditingMode}
+                          onChange={e => {
+                            setSelectedAsk({ ...selectedAsk, id: e.target.value })
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div className="field">
+                      <div className="control">
+                        <label className="checkbox">
+                          <input type="checkbox" checked={selectedAsk.isOrder} disabled={!isAskEditingMode} onChange={e => {
+                            setSelectedAsk({ ...selectedAsk, isOrder: e.target.checked })
+                          }} />
+                                    Essa pergunta está relacionada a um pedido
+                                </label>
+                      </div>
+                    </div>
+                    <div className="field" style={{ display: "flex", justifyContent: "space-around" }}>
+                      {isAskEditingMode == false &&
+                        <button
+                          className="button is-primary"
+                          onClick={() => setIsAskEditingMode(true)}>Editar</button>}
+
+                      {isAskEditingMode == true &&
+                        <button
+                          className="button is-success"
+                          onClick={() => {
+                            handleSubmitNewAsk()
+                          }}
+                        >Salvar</button>}
+                        {isAskEditingMode == true &&
+                        <button
+                          className="button is-warning"
+                          onClick={() => setIsAskEditingMode(false)}>Cancelar</button>}
+                      <button
+                        className="button is-danger"
+                        onClick={() => handleDeleteAsk()}>Excluir</button>
+                    </div>
+                  </div>
+                </div>}
               {show == 'ask_create' &&
                 <div className="card-content">
                   <div className="content">
@@ -343,7 +405,7 @@ export default function Settings({ endpoint, session }) {
                           required={true}
                           value={newAsk.ask}
                           onChange={e => {
-                            setNewAsk({...newAsk, ask: e.target.value})
+                            setNewAsk({ ...newAsk, ask: e.target.value })
                           }}
                         />
                       </div>
@@ -358,7 +420,7 @@ export default function Settings({ endpoint, session }) {
                           required={true}
                           value={newAsk.answer}
                           onChange={e => {
-                            setNewAsk({...newAsk, answer: e.target.value})
+                            setNewAsk({ ...newAsk, answer: e.target.value })
                           }}
                         />
                       </div>
@@ -373,7 +435,7 @@ export default function Settings({ endpoint, session }) {
                           required={true}
                           value={newAsk.id}
                           onChange={e => {
-                            setNewAsk({...newAsk, id: e.target.value})
+                            setNewAsk({ ...newAsk, id: e.target.value })
                           }}
                         />
                       </div>
@@ -382,8 +444,8 @@ export default function Settings({ endpoint, session }) {
                       <div className="control">
                         <label className="checkbox">
                           <input type="checkbox" checked={newAsk.isOrder} onChange={e => {
-                            setNewAsk({...newAsk, isOrder: e.target.checked})
-                          }}/>
+                            setNewAsk({ ...newAsk, isOrder: e.target.checked })
+                          }} />
                             Essa pergunta está relacionada a um pedido
                         </label>
                       </div>
