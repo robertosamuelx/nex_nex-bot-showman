@@ -2,7 +2,7 @@ import { GetServerSideProps } from "next"
 import { signOut, getSession } from 'next-auth/client'
 import { useState, useEffect, useRef } from 'react'
 import moment from 'moment'
-import { FaUpload } from 'react-icons/fa'
+import { FaUpload, FaSearch, FaTrash } from 'react-icons/fa'
 
 interface Contact {
     name: string,
@@ -18,6 +18,7 @@ interface Campaign {
 
 export default function Campaign({ endpoint, session }) {
     const [contacts, setContacts] = useState<Contact[]>([])
+    const [selectedContacts, setSelectedContacts] = useState<Contact[]>([])
     const [searchedContact, setSearchedContact] = useState("")
     const [campaigns, setCampaigns] = useState<Campaign[]>([])
     const [selectedCampaign, setSelectedCampaign] = useState<Campaign>({ id: "", name: "", contacts: [], createdAt: null })
@@ -25,7 +26,11 @@ export default function Campaign({ endpoint, session }) {
     const [show, setShow] = useState("")
 
     async function getContacts() {
-        const res = await fetch(endpoint + '/contacts')
+        const res = await fetch(endpoint + '/contacts', {
+            headers: {
+                "filter": searchedContact
+            }
+        })
         const json = await res.json()
         setContacts(json)
     }
@@ -34,6 +39,16 @@ export default function Campaign({ endpoint, session }) {
         const res = await fetch(endpoint + '/campaigns')
         const json = await res.json()
         setCampaigns(json)
+    }
+
+    function addContact(contact: Contact){
+        if(!selectedContacts.includes(contact))
+            setSelectedContacts([...selectedContacts, contact])
+    }
+
+    function delContact(contact: Contact){
+        if(selectedContacts.includes(contact))
+            setSelectedContacts(selectedContacts.filter(contact_ => contact_.number !== contact.number))
     }
 
     useEffect(() => {
@@ -115,8 +130,16 @@ export default function Campaign({ endpoint, session }) {
                                             </div>
                                         </div>
                                         <div className="field">
-                                            <label className="label">Lista de Contatos</label>
+                                            <label className="label">Data e hora</label>
                                             <div className="control">
+                                                <input className="input"/>
+                                            </div>
+                                        </div>
+                                        <div className="field" style={{ display: "flex", justifyContent: "center", marginBottom: "5%" }}>
+                                            <label className="label">Lista de Contatos</label>
+                                        </div>
+                                        <div className="columns">
+                                            {/* <div className="column">
                                                 <div className="file">
                                                     <label className="file-label">
                                                         <input className="file-input" type="file" name="base" />
@@ -129,8 +152,60 @@ export default function Campaign({ endpoint, session }) {
                                                     </label>
                                                 </div>
                                             </div>
-                                            <div className="control">
-                                                
+                                            <div className="column">
+                                                <p>ou</p>
+                                            </div> */}
+                                            <div className="column">
+                                                <div className="columns">
+                                                    <div className="column">
+                                                        <input
+                                                            className="input"
+                                                            placeholder="José da Silva"
+                                                            onChange={e => setSearchedContact(e.target.value)}
+                                                            value={searchedContact} />
+                                                        <div className="content">
+                                                            <ul style={{ listStyle: "none" }}>
+                                                                {contacts.map(contact => {
+                                                                    return <li key={contact.number}>
+                                                                        <button
+                                                                            className="button is-white"
+                                                                            onClick={() => { addContact(contact)}}>
+                                                                            {contact.name}
+                                                                        </button>
+                                                                    </li>
+                                                                })}
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                                    <div className="column is-2">
+                                                        <FaSearch
+                                                            size={25}
+                                                            onClick={() => {
+                                                                if(searchedContact !== "")
+                                                                    getContacts()
+                                                                else
+                                                                    setContacts([])
+                                                            }} />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="column">
+                                                <div className="box">
+                                                    {selectedContacts.map(contact => {
+                                                    return <div className="card" style={{border: "1px dotted"}}>
+                                                        <div className="card-header">
+                                                            <p className="card-header-title">{contact.name}</p>
+                                                        </div>
+                                                        <div className="card-content" style={{display: "flex", justifyContent: "space-between"}}>
+                                                            <p>{contact.number}</p>
+                                                            <span><FaTrash onClick={() => delContact(contact)}/></span>
+                                                        </div>
+                                                    </div>})}
+                                                    <div style={{display:"flex", justifyContent: "space-around", alignItems: "center"}}>
+                                                        <button className="button is-primary" onClick={() => alert("em desenvolvimento")}>Salvar</button>
+                                                        <button className="button is-warning" onClick={() => setSelectedContacts([])}>Limpar</button>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
