@@ -3,6 +3,7 @@ import { signOut, getSession } from 'next-auth/client'
 import { useState, useEffect, useRef } from 'react'
 import moment from 'moment'
 import { FaUpload, FaSearch, FaTrash } from 'react-icons/fa'
+import { useToasts } from 'react-toast-notifications'
 
 interface Contact {
     name: string,
@@ -10,7 +11,6 @@ interface Contact {
 }
 
 interface Campaign {
-    id: string,
     name: string,
     contacts: Contact[],
     createdAt: Date
@@ -18,12 +18,13 @@ interface Campaign {
 
 export default function Campaign({ endpoint, session }) {
     const [contacts, setContacts] = useState<Contact[]>([])
-    const [selectedContacts, setSelectedContacts] = useState<Contact[]>([])
+    //const [selectedContacts, setSelectedContacts] = useState<Contact[]>([])
     const [searchedContact, setSearchedContact] = useState("")
     const [campaigns, setCampaigns] = useState<Campaign[]>([])
-    const [selectedCampaign, setSelectedCampaign] = useState<Campaign>({ id: "", name: "", contacts: [], createdAt: null })
-    const [newCampaign, setNewCampaign] = useState<Campaign>({ id: "", name: "", contacts: [], createdAt: null })
+    const [selectedCampaign, setSelectedCampaign] = useState<Campaign>({name: "", contacts: [], createdAt: null })
+    const [newCampaign, setNewCampaign] = useState<Campaign>({name: "", contacts: [], createdAt: null })
     const [show, setShow] = useState("")
+    const { addToast } = useToasts()
 
     async function getContacts() {
         const res = await fetch(endpoint + '/contacts', {
@@ -41,14 +42,32 @@ export default function Campaign({ endpoint, session }) {
         setCampaigns(json)
     }
 
+    function createCampaign() {
+        const data = JSON.stringify(newCampaign)
+        console.log(data)
+        fetch(endpoint + '/campaign', {
+            method: "POST",
+            body: data,
+            headers: {
+                'Content-Type': 'application/json'
+              }
+        }).then(() => {
+            addToast("Campanha criada com sucesso!", {autoDismiss: true, appearance: "success"})
+            getCampaigns()
+        }).catch( err => {
+            addToast("Ops, ocorreu um erro durante a criação, tente novamente mais tarde.", { autoDismiss: true, appearance: "error" })
+            console.error(err)
+        })
+    }
+
     function addContact(contact: Contact){
-        if(!selectedContacts.includes(contact))
-            setSelectedContacts([...selectedContacts, contact])
+        if(!newCampaign.contacts.includes(contact))
+            setNewCampaign({...newCampaign, contacts: [...newCampaign.contacts, contact]})
     }
 
     function delContact(contact: Contact){
-        if(selectedContacts.includes(contact))
-            setSelectedContacts(selectedContacts.filter(contact_ => contact_.number !== contact.number))
+        if(newCampaign.contacts.includes(contact))
+            setNewCampaign({...newCampaign, contacts: newCampaign.contacts.filter(contact_ => contact.number !== contact_.number)})
     }
 
     useEffect(() => {
@@ -78,7 +97,7 @@ export default function Campaign({ endpoint, session }) {
                                         setShow("camp_details")
                                     }}>
                                         <option value={0}>Escolha</option>
-                                        {campaigns.map((campaign, index) => <ItemCampaign campaign={campaign} key={campaign.id} index={index} />)}
+                                        {campaigns.map((campaign, index) => <ItemCampaign campaign={campaign} key={campaign.name} index={index} />)}
                                     </select>
                                 </div>
                                 <button
@@ -129,12 +148,12 @@ export default function Campaign({ endpoint, session }) {
                                                     }} />
                                             </div>
                                         </div>
-                                        <div className="field">
+                                        {/* <div className="field">
                                             <label className="label">Data e hora</label>
                                             <div className="control">
                                                 <input className="input"/>
                                             </div>
-                                        </div>
+                                        </div> */}
                                         <div className="field" style={{ display: "flex", justifyContent: "center", marginBottom: "5%" }}>
                                             <label className="label">Lista de Contatos</label>
                                         </div>
@@ -191,7 +210,7 @@ export default function Campaign({ endpoint, session }) {
                                             </div>
                                             <div className="column">
                                                 <div className="box">
-                                                    {selectedContacts.map(contact => {
+                                                    {newCampaign.contacts.map(contact => {
                                                     return <div className="card" style={{border: "1px dotted"}}>
                                                         <div className="card-header">
                                                             <p className="card-header-title">{contact.name}</p>
@@ -202,8 +221,10 @@ export default function Campaign({ endpoint, session }) {
                                                         </div>
                                                     </div>})}
                                                     <div style={{display:"flex", justifyContent: "space-around", alignItems: "center"}}>
-                                                        <button className="button is-primary" onClick={() => alert("em desenvolvimento")}>Salvar</button>
-                                                        <button className="button is-warning" onClick={() => setSelectedContacts([])}>Limpar</button>
+                                                        <button className="button is-primary" onClick={() => createCampaign()}>Salvar</button>
+                                                        <button className="button is-warning" onClick={() => {
+                                                            setNewCampaign({...newCampaign, contacts: []})
+                                                        }}>Limpar</button>
                                                     </div>
                                                 </div>
                                             </div>
