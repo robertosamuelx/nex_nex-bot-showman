@@ -4,6 +4,9 @@ import { useState, useEffect, useRef } from 'react'
 import moment from 'moment'
 import { FaUpload, FaSearch, FaTrash } from 'react-icons/fa'
 import { useToasts } from 'react-toast-notifications'
+import DatePicker, { registerLocale, setDefaultLocale } from "react-datepicker"
+import pt_br from 'date-fns/locale/pt-BR'
+registerLocale('pt_br', pt_br)
 
 interface Contact {
     name: string,
@@ -13,16 +16,18 @@ interface Contact {
 interface Campaign {
     name: string,
     contacts: Contact[],
-    createdAt: Date
+    createdAt: Date,
+    message: string,
+    sendAt: Date
 }
 
 export default function Campaign({ endpoint, session }) {
     const [contacts, setContacts] = useState<Contact[]>([])
-    //const [selectedContacts, setSelectedContacts] = useState<Contact[]>([])
     const [searchedContact, setSearchedContact] = useState("")
     const [campaigns, setCampaigns] = useState<Campaign[]>([])
-    const [selectedCampaign, setSelectedCampaign] = useState<Campaign>({name: "", contacts: [], createdAt: null })
-    const [newCampaign, setNewCampaign] = useState<Campaign>({name: "", contacts: [], createdAt: null })
+    const [selectedCampaign, setSelectedCampaign] = useState<Campaign>({name: "", contacts: [], createdAt: null, message: "", sendAt: null  })
+    const [newCampaign, setNewCampaign] = useState<Campaign>({name: "", contacts: [], createdAt: null, message: "", sendAt: null })
+    const [auxSendAtNewCampaign, setAuxSendAtNewCampaign] = useState("")
     const [show, setShow] = useState("")
     const { addToast } = useToasts()
 
@@ -125,7 +130,8 @@ export default function Campaign({ endpoint, session }) {
                                 <div className="card-content">
                                     <div className="content">
                                         <p>Nome: {selectedCampaign.name}</p>
-                                        <p>Data de disparo: {selectedCampaign.createdAt ? moment(selectedCampaign.createdAt.toString()).format("DD/MM/YYYY") : ""}</p>
+                                        <p>Data de disparo: {selectedCampaign.sendAt ? moment(selectedCampaign.sendAt.toString()).format("DD/MM/YYYY") : ""}</p>
+                                        <p>Mensagem: {selectedCampaign.message}</p>
                                         <p>Contatos impactados: <strong>{selectedCampaign.contacts.length}</strong></p>
                                         <ul style={{ listStyle: "none" }}>
                                             {selectedCampaign.contacts.map(contact => <li key={contact.number}>{contact.name}</li>)}
@@ -145,15 +151,32 @@ export default function Campaign({ endpoint, session }) {
                                                     value={newCampaign.name.toString()}
                                                     onChange={e => {
                                                         setNewCampaign({ ...newCampaign, name: e.target.value })
-                                                    }} />
+                                                    }}
+                                                    required={true}/>
                                             </div>
                                         </div>
-                                        {/* <div className="field">
+                                        <div className="field">
                                             <label className="label">Data e hora</label>
                                             <div className="control">
-                                                <input className="input"/>
+                                                <DatePicker
+                                                    selected={newCampaign.sendAt}
+                                                    onChange={date => setNewCampaign({...newCampaign, sendAt: date})}
+                                                    dateFormat="dd/MM/yyyy"
+                                                    locale="pt_br"/>
                                             </div>
-                                        </div> */}
+                                        </div>
+                                        <div className="field">
+                                            <label className="label">Mensagem</label>
+                                            <div className="control">
+                                                <textarea
+                                                    className="textarea"
+                                                    rows={5}
+                                                    required={true}
+                                                    placeholder="Promoção imperdível!"
+                                                    value={newCampaign.message}
+                                                    onChange={e => setNewCampaign({...newCampaign, message: e.target.value})}/>
+                                            </div>
+                                        </div>
                                         <div className="field" style={{ display: "flex", justifyContent: "center", marginBottom: "5%" }}>
                                             <label className="label">Lista de Contatos</label>
                                         </div>

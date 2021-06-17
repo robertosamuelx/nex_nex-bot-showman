@@ -1,5 +1,6 @@
 import '../styles/globals.css'
 import '../styles/whatsclone.css'
+import "react-datepicker/dist/react-datepicker.css"
 import { ToastProvider } from 'react-toast-notifications'
 import { Provider } from 'next-auth/client'
 
