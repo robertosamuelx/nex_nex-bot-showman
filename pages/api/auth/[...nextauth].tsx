@@ -17,7 +17,7 @@ export default NextAuth({
                 }
             },
             async authorize(credentials) {
-                const res = await fetch('https://nexbot-manager.herokuapp.com/user/login', {
+                const res = await fetch(process.env.ENDPOINT_MANAGER+'/user/login', {
                     headers: {
                         'Content-Type': 'application/json'
                       },

@@ -156,6 +156,8 @@ export default function Home({ endpoint, session, myNumber }) {
 
             }
           })
+          if(!name)
+            name = el.user
           return { ...el, name, status }
         })
         setLatest(result)
@@ -176,7 +178,7 @@ export default function Home({ endpoint, session, myNumber }) {
 
     const data = {
       createdAt: new Date(),
-      from: myNumber,
+      from: myNumber || 5511992619747,
       to,
       body: message,
       salesman: sallesmanName
