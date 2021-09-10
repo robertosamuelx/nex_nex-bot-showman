@@ -10,7 +10,7 @@ interface User {
   password: String,
   createdAt: String,
   lastLogin: String,
-  id: number
+  _id: string
 }
 interface NewUser {
   username: String,
@@ -26,11 +26,11 @@ interface Ask {
   isOrder: boolean
 }
 
-export default function Settings({ endpoint, session }) {
+export default function Settings({ endpoint, endpoint_bot, session }) {
 
   const [users, setUsers] = useState<User[]>([])
   const [asks, setAsks] = useState<Ask[]>([])
-  const [selectedUser, setSelectedUser] = useState<User>({ id: 0, name: "", createdAt: '', lastLogin: '', password: '', username: '' })
+  const [selectedUser, setSelectedUser] = useState<User>({ _id: "", name: "", createdAt: '', lastLogin: '', password: '', username: '' })
   const [selectedAsk, setSelectedAsk] = useState<Ask>({ id: "", answer: "", ask: "", isOrder: false })
   const [show, setShow] = useState("")
   const [newUser, setNewUser] = useState<NewUser>({ name: "", password: '', username: '', confirmPassword: "" })
@@ -114,7 +114,7 @@ export default function Settings({ endpoint, session }) {
   }
 
   function handleDeleteUser() {
-    fetch(endpoint + "/user/" + selectedUser.id, {
+    fetch(endpoint + "/user/" + selectedUser._id, {
       method: "DELETE"
     })
       .then(() => {
@@ -140,6 +140,19 @@ export default function Settings({ endpoint, session }) {
     }).catch(err => {
       addToast("Ops, ocorreu um erro, tente novamente mais tarde", { autoDismiss: true, appearance: "error" })
       console.log(err)
+    })
+  }
+
+  function handleQrCode() {
+    fetch(endpoint_bot + "/qrcode/refresh", {
+      method: "GET"
+    }).then(res => res.blob())
+    .then(blob => {
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'qrcode.png'
+      a.click()
     })
   }
 
@@ -177,6 +190,11 @@ export default function Settings({ endpoint, session }) {
     getAsks()
   }, [])
 
+  function doAction(e) {
+    if(e.target.value == 1)
+      return handleQrCode()
+  }
+
   return (
     <section className="section">
       <div className="container">
@@ -195,7 +213,7 @@ export default function Settings({ endpoint, session }) {
                     setShow('user_details')
                   }}>
                     <option value={0}>Escolha</option>
-                    {users.map((user, index) => <ListUsers user={user} index={index} key={user.id} />)}
+                    {users.map((user, index) => <ListUsers user={user} index={index} key={user._id} />)}
                   </select>
                 </div>
                 <button
@@ -227,6 +245,23 @@ export default function Settings({ endpoint, session }) {
                   onClick={() => {
                     setShow("ask_create")
                   }}>Criar novo</button>
+              </div>
+            </div>
+            <div className="card">
+              <div className="card-header">
+                <h3 className="card-header-title title is-4">
+                  Bot
+                </h3>
+              </div>
+              <div className="card-content">
+                <div className="select is-info">
+                  <select onChange={e => doAction(e)}>
+                    <option value={0}>Escolha</option>
+                    <option value={1}>Gerar QRcode</option>
+                    <option value={2}>Ativar/Desativar</option>
+                    <option value={3}>Redefinir horário de fechamento</option>
+                  </select>
+                </div>
               </div>
             </div>
           </div>
@@ -493,6 +528,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   return {
     props: {
       endpoint: process.env.ENDPOINT_MANAGER,
+      endpoint_bot: process.env.ENDPOINT_BOT,
       session: session
     }
   }
