@@ -89,6 +89,15 @@ export default function Home({ endpoint, session, myNumber }) {
     })
   }
 
+  function handleCloseSale() {
+    fetch(endpoint + '/cached/' + active.number, {
+      method: "DELETE"
+    }).then(() => {getChats()})
+    .catch(err => {
+      addToast(err ,{appearance: "error", autoDismiss: true})
+    })
+  }
+
   async function getCategories() {
     const res = await fetch(endpoint + '/categories')
     const json = await res.json()
@@ -339,7 +348,7 @@ export default function Home({ endpoint, session, myNumber }) {
                 <button className="button"
                   style={{ background: 'none', border: 'none', marginLeft: '10px'}}
                   onClick={() => {
-                    alert('Funçao de encerrar atendimento em desenvolvimento')
+                    handleCloseSale()
                   }}
                 >
                   <CgCloseR />
