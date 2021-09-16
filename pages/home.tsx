@@ -92,7 +92,10 @@ export default function Home({ endpoint, session, myNumber }) {
   function handleCloseSale() {
     fetch(endpoint + '/cached/' + active.number, {
       method: "DELETE"
-    }).then(() => {getChats()})
+    }).then(() => {
+      getChats()
+      addToast("Atendimento encerrado com sucesso!" ,{appearance: "success", autoDismiss: true})
+    })
     .catch(err => {
       addToast(err ,{appearance: "error", autoDismiss: true})
     })
