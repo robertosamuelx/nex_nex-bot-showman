@@ -66,7 +66,7 @@ export default function Home({ endpoint, session, myNumber }) {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" })
   }
 
-  function handleDownloadFile(){
+  function handleDownloadFile() {
     const data = {
       user: active.number,
       filter: {
@@ -80,13 +80,13 @@ export default function Home({ endpoint, session, myNumber }) {
         'Content-Type': 'application/json'
       }
     }).then(res => res.blob())
-    .then(blob => {
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = 'download.zip'
-      a.click()
-    })
+      .then(blob => {
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = 'download.zip'
+        a.click()
+      })
   }
 
   function handleCloseSale() {
@@ -94,11 +94,11 @@ export default function Home({ endpoint, session, myNumber }) {
       method: "DELETE"
     }).then(() => {
       getChats()
-      addToast("Atendimento encerrado com sucesso!" ,{appearance: "success", autoDismiss: true})
+      addToast("Atendimento encerrado com sucesso!", { appearance: "success", autoDismiss: true })
     })
-    .catch(err => {
-      addToast(err ,{appearance: "error", autoDismiss: true})
-    })
+      .catch(err => {
+        addToast(err, { appearance: "error", autoDismiss: true })
+      })
   }
 
   async function getCategories() {
@@ -168,7 +168,7 @@ export default function Home({ endpoint, session, myNumber }) {
 
             }
           })
-          if(!name)
+          if (!name)
             name = el.user
           return { ...el, name, status }
         })
@@ -340,7 +340,7 @@ export default function Home({ endpoint, session, myNumber }) {
           <div className="column conversa-ativa">
             <div className="barra-superior">
               <span>{active.name}</span>
-              <div style={{display: active.name ? 'block' : 'none'}}>
+              <div style={{ display: active.name ? 'block' : 'none' }}>
                 <button className="button"
                   style={{ background: 'none', border: 'none', marginLeft: '10px' }}
                   onClick={() => {
@@ -349,7 +349,7 @@ export default function Home({ endpoint, session, myNumber }) {
                   <BsThreeDots />
                 </button>
                 <button className="button"
-                  style={{ background: 'none', border: 'none', marginLeft: '10px'}}
+                  style={{ background: 'none', border: 'none', marginLeft: '10px' }}
                   onClick={() => {
                     handleCloseSale()
                   }}
@@ -427,7 +427,14 @@ export default function Home({ endpoint, session, myNumber }) {
               <textarea placeholder="Insira a mensagem" onChange={e => {
                 setMyMessage(e.target.value)
               }}
-                value={myMessage} />
+                value={myMessage} onKeyPress={e => {
+                  if (e.key === "Enter") {
+                    if (myMessage !== '')
+                      sendMessage(active.number, myMessage)
+                    else
+                      addToast('Mensagem inválida!', { autoDismiss: true, appearance: "error" })
+                  }
+                }} />
               <button
                 style={{ background: 'none', border: 'none' }}
                 className="button"

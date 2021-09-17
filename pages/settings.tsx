@@ -156,6 +156,15 @@ export default function Settings({ endpoint, endpoint_bot, session }) {
     })
   }
 
+  function handleStartBot() {
+    fetch(endpoint + "/start")
+    .then(() => {
+      addToast("Bot ativado com sucesso", { autoDismiss: true, appearance: "success" })
+    }).catch(() => {
+      addToast("Falha ao ativar o bot, tente novamente mais tarde", { autoDismiss: true, appearance: "error" })
+    })
+  }
+
   function ListUsers(props: { user: User, index: number }) {
     return (<option value={props.index}>{props.user.username}</option>)
   }
@@ -193,6 +202,8 @@ export default function Settings({ endpoint, endpoint_bot, session }) {
   function doAction(e) {
     if(e.target.value == 1)
       return handleQrCode()
+    else if(e.target.value == 2)
+      return handleStartBot()
   }
 
   return (
